@@ -1,0 +1,115 @@
+@import "tailwindcss";
+@plugin "tailwindcss-animate";
+
+@theme {
+  /* ─── Light theme ─── */
+  --color-background: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #F5F6F8;
+  --color-surface-hover: #ECEDF0;
+  --color-border: #C4C9D2;
+  --color-border-subtle: #DFE1E6;
+
+  /* Brand */
+  --color-brand: #5B63D3;
+  --color-brand-hover: #4A51C0;
+  --color-brand-muted: #7C82E6;
+
+  /* Text */
+  --color-text-primary: #1A1D23;
+  --color-text-secondary: #3D434D;
+  --color-text-tertiary: #6B7280;
+  --color-text-muted: #9CA3AF;
+
+  /* Status */
+  --color-status-new: #2563EB;
+  --color-status-recall: #D97706;
+  --color-status-quote: #7C3AED;
+  --color-status-won: #16A34A;
+  --color-status-lost: #DC2626;
+
+  /* Feedback */
+  --color-success: #16A34A;
+  --color-warning: #D97706;
+  --color-error: #DC2626;
+  --color-info: #2563EB;
+
+  /* Gamification */
+  --color-gold: #CA8A04;
+  --color-silver: #6B7280;
+  --color-bronze: #C2410C;
+
+  /* Sidebar */
+  --sidebar-width: 232px;
+  --sidebar-collapsed-width: 60px;
+
+  /* Radius scale */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+
+  /* Shadow scale */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.08);
+  --shadow-lg: 0 4px 16px rgba(0,0,0,0.1);
+  --shadow-xl: 0 8px 32px rgba(0,0,0,0.12);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  letter-spacing: -0.011em;
+  line-height: 1.5;
+}
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+/* ─── Selection ─── */
+::selection { background: rgba(91, 99, 211, 0.15); }
+
+/* ─── Stat card ─── */
+.stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+.stat-card:hover {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ─── Table rows ─── */
+.table-row-hover {
+  transition: background-color 100ms ease;
+}
+.table-row-hover:hover {
+  background-color: var(--color-surface-elevated);
+}
+
+/* ─── Glass ─── */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* ─── Pipeline drag ─── */
+.pipeline-card-dragging {
+  opacity: 0.7;
+  transform: rotate(1deg) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
