@@ -6,6 +6,7 @@ import { StatCard } from '@/components/ui/stat-card';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { getRepAvatar } from '@/lib/constants/avatars';
 import { cn } from '@/lib/utils/cn';
 import {
   DollarSign,
@@ -68,10 +69,10 @@ const payoutCards = [
 ];
 
 const statusStyles: Record<string, string> = {
-  pending: 'bg-warning/10 text-warning',
-  approved: 'bg-info/10 text-info',
-  paid: 'bg-success/10 text-success',
-  reversed: 'bg-error/10 text-error',
+  pending: 'bg-warning text-white',
+  approved: 'bg-info text-white',
+  paid: 'bg-success text-white',
+  reversed: 'bg-error text-white',
 };
 
 const commissionEntries = [
@@ -96,10 +97,10 @@ const payoutEntries = [
 ];
 
 const payoutStatusStyles: Record<string, string> = {
-  future: 'bg-info/10 text-info',
-  invoiced: 'bg-warning/10 text-warning',
-  serviced: 'bg-brand/10 text-brand',
-  paid: 'bg-success/10 text-success',
+  future: 'bg-info text-white',
+  invoiced: 'bg-warning text-white',
+  serviced: 'bg-brand text-white',
+  paid: 'bg-success text-white',
 };
 
 export default function CommissionsPage() {
@@ -129,7 +130,7 @@ export default function CommissionsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-1 rounded-lg border border-border-subtle p-0.5">
+      <div className="flex items-center gap-3">
         {([
           { key: 'commissions' as Tab, label: 'Commissions' },
           { key: 'payout' as Tab, label: 'Payout' },
@@ -138,10 +139,10 @@ export default function CommissionsPage() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={cn(
-              'flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all',
+              'rounded-lg border px-5 py-2.5 text-sm font-semibold transition-all duration-200',
               activeTab === tab.key
-                ? 'bg-surface-elevated text-text-primary shadow-sm'
-                : 'text-text-muted hover:text-text-secondary'
+                ? 'bg-white text-text-primary border-border shadow-md scale-105'
+                : 'bg-transparent text-text-muted border-transparent hover:text-text-secondary hover:bg-white/50'
             )}
           >
             {tab.label}
@@ -184,7 +185,7 @@ export default function CommissionsPage() {
                         <td className="px-5 py-2.5 text-sm font-medium text-text-primary">{entry.lead}</td>
                         <td className="px-5 py-2.5">
                           <div className="flex items-center gap-2">
-                            <Avatar name={entry.rep} size="sm" className="!h-5 !w-5 !text-[8px]" />
+                            <Avatar name={entry.rep} src={getRepAvatar(entry.rep)} size="sm" className="!h-5 !w-5 !text-[8px]" />
                             <span className="text-sm text-text-secondary">{entry.rep}</span>
                           </div>
                         </td>

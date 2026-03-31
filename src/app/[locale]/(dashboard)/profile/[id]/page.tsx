@@ -2,6 +2,7 @@
 
 import { use, useState } from 'react';
 import { Avatar } from '@/components/ui/avatar';
+import { getRepAvatar } from '@/lib/constants/avatars';
 import { cn } from '@/lib/utils/cn';
 import { Link } from '@/i18n/navigation';
 import {
@@ -139,7 +140,7 @@ export default function ProfileByIdPage({ params }: { params: Promise<{ id: stri
         <div className="absolute -top-14">
           <div className="rounded-full p-[3px]" style={{ background: 'linear-gradient(135deg, #7C3AED, #0D9488)', boxShadow: '0 0 24px rgba(124,58,237,0.35)' }}>
             <div className="rounded-full" style={{ border: '4px solid #0B0F14' }}>
-              <Avatar name={p.name} src={p.avatar_url} size="lg" className="!h-[110px] !w-[110px]" />
+              <Avatar name={p.name} src={p.avatar_url || getRepAvatar(p.name)} size="lg" className="!h-[110px] !w-[110px]" />
             </div>
           </div>
         </div>

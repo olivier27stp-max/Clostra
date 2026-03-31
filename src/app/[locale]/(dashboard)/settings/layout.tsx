@@ -3,7 +3,7 @@
 import { usePathname } from '@/i18n/navigation';
 import { Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils/cn';
-import { Settings, Users, GitBranch, DollarSign, Calendar, Award, CreditCard, Globe } from 'lucide-react';
+import { Settings, Users, GitBranch, DollarSign, Calendar, Award, BarChart3 } from 'lucide-react';
 
 const tabs = [
   { href: '/settings/general', label: 'Général', icon: Settings },
@@ -12,6 +12,7 @@ const tabs = [
   { href: '/settings/commissions', label: 'Commissions', icon: DollarSign },
   { href: '/settings/calendar', label: 'Calendrier', icon: Calendar },
   { href: '/settings/badges', label: 'Badges', icon: Award },
+  { href: '/settings/reports', label: 'Rapports', icon: BarChart3 },
 ];
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {

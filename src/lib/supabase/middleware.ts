@@ -33,12 +33,19 @@ export async function updateSession(request: NextRequest) {
   const locale = request.nextUrl.pathname.split('/')[1] || 'fr';
   const isAuthPage =
     request.nextUrl.pathname.includes('/login') ||
+    request.nextUrl.pathname.includes('/signup') ||
     request.nextUrl.pathname.includes('/forgot-password');
+  const isOnboarding = request.nextUrl.pathname.includes('/onboarding');
 
   if (!user && !isAuthPage) {
     const url = request.nextUrl.clone();
     url.pathname = `/${locale}/login`;
     return NextResponse.redirect(url);
+  }
+
+  // Allow onboarding page for authenticated users without completed profile
+  if (user && isOnboarding) {
+    return supabaseResponse;
   }
 
   if (user && isAuthPage) {

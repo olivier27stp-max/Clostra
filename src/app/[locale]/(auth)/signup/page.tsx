@@ -9,23 +9,30 @@ import { Button } from '@/components/ui/button';
 import { ClostraLogo } from '@/components/ui/clostra-logo';
 import { createClient } from '@/lib/supabase/client';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const t = useTranslations('auth');
   const tCommon = useTranslations('common');
   const router = useRouter();
   const pathname = usePathname();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
 
+    if (password !== confirmPassword) {
+      setError(t('passwords_mismatch'));
+      return;
+    }
+
+    setIsLoading(true);
+
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signInWithPassword({
+    const { error: authError } = await supabase.auth.signUp({
       email,
       password,
     });
@@ -36,7 +43,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/dashboard');
+    // After signup, redirect to onboarding to fill profile
+    router.push('/onboarding');
     router.refresh();
   };
 
@@ -46,8 +54,8 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center">
           <ClostraLogo size={44} />
-          <h1 className="mt-4 text-lg font-semibold text-text-primary">{tCommon('app_name')}</h1>
-          <p className="mt-1 text-sm text-text-tertiary">{t('welcome_back')}</p>
+          <h1 className="mt-4 text-lg font-semibold text-text-primary">{t('create_account')}</h1>
+          <p className="mt-1 text-sm text-text-tertiary">{t('create_account_subtitle')}</p>
         </div>
 
         {/* Form */}
@@ -63,19 +71,20 @@ export default function LoginPage() {
               <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
             </div>
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-text-secondary">{t('password')}</label>
-                <button type="button" className="text-xs font-medium text-brand hover:text-brand-hover transition-colors">{t('forgot_password')}</button>
-              </div>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+              <label htmlFor="password" className="block text-sm font-medium text-text-secondary">{t('password')}</label>
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" minLength={6} />
             </div>
-            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>{t('sign_in')}</Button>
+            <div className="space-y-1.5">
+              <label htmlFor="confirm-password" className="block text-sm font-medium text-text-secondary">{t('confirm_password')}</label>
+              <Input id="confirm-password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required autoComplete="new-password" />
+            </div>
+            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>{t('sign_up')}</Button>
           </form>
 
           <p className="mt-4 text-center text-xs text-text-muted">
-            {t('no_account')}{' '}
-            <Link href="/signup" className="font-medium text-brand hover:text-brand-hover transition-colors">
-              {t('sign_up')}
+            {t('already_have_account')}{' '}
+            <Link href="/login" className="font-medium text-brand hover:text-brand-hover transition-colors">
+              {t('sign_in')}
             </Link>
           </p>
         </div>

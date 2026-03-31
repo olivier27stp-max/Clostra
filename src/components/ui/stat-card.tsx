@@ -14,7 +14,7 @@ export function StatCard({ icon, label, value, change, subtitle, className }: St
   return (
     <div className={cn('stat-card', className)}>
       {icon && (
-        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-brand/8 text-brand">
+        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg" style={{ backgroundColor: '#F0F0F0', color: '#9333ea' }}>
           {icon}
         </div>
       )}

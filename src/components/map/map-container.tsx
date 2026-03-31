@@ -15,6 +15,26 @@ import { LumeCreateModal } from './lume-create-modal';
 import { LumeDetailPanel } from './lume-detail-panel';
 import type { LumeCreateResponse } from '@/types/lume';
 import { getCachedMapPins, cacheMapPins, getCachedMapZones, cacheMapZones } from '@/lib/offline/cache';
+import { getRepAvatar } from '@/lib/constants/avatars';
+
+// ---------------------------------------------------------------------------
+// Simulated rep live positions (would come from real-time API)
+// ---------------------------------------------------------------------------
+
+interface RepPosition {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  status: string;
+}
+
+const SIMULATED_REP_POSITIONS: RepPosition[] = [
+  { id: 'rep-1', name: 'Sarah Chen', lat: 46.3455, lng: -72.5420, status: 'En route' },
+  { id: 'rep-2', name: 'Marcus Davis', lat: 46.3510, lng: -72.5550, status: 'En démo' },
+  { id: 'rep-3', name: 'Emily Rodriguez', lat: 46.3390, lng: -72.5380, status: 'Prospection' },
+  { id: 'rep-4', name: 'Jordan Kim', lat: 46.3480, lng: -72.5610, status: 'En déplacement' },
+];
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -97,6 +117,8 @@ export function MapContainer() {
   const [showZones, setShowZones] = useState(true);
   const [zoneDateFilter, setZoneDateFilter] = useState<DateFilter>('all');
   const [filterByRep, setFilterByRep] = useState<string>('all');
+  const [showReps, setShowReps] = useState(true);
+  const repMarkersRef = useRef(new Map<string, mapboxgl.Marker>());
 
   // --- Select mode refs ---
   const selectBoxRef = useRef<HTMLDivElement>(null);
@@ -361,13 +383,21 @@ export function MapContainer() {
 
       map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
       map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right');
-      const geo = new mapboxgl.GeolocateControl({ positionOptions: { enableHighAccuracy: true }, trackUserLocation: true, showUserHeading: true });
+      const geo = new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,
+        showUserHeading: true,
+        showAccuracyCircle: true,
+      });
       map.addControl(geo, 'bottom-right');
+
+      // Activate geolocation tracking without flying away from current center
+      map.on('load', () => { geo.trigger(); });
       map.addControl(new mapboxgl.ScaleControl({ maxWidth: 100 }), 'bottom-left');
 
       map.on('load', () => {
         mapRef.current = map;
-        geo.trigger();
+        setMapReady(true);
 
         // Load saved pins
         getCachedMapPins<LeadPinData>().then((saved) => {
@@ -441,19 +471,24 @@ export function MapContainer() {
       return map;
     }
 
-    let mapInstance: mapboxgl.Map | null = null;
+    // Init map immediately, then jump to user location when available
+    const mapInstance = initMap(fallback, 14);
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
-        (pos) => { mapInstance = initMap([pos.coords.longitude, pos.coords.latitude], 17); },
-        () => { mapInstance = initMap(fallback, 17); },
-        { enableHighAccuracy: true, timeout: 5000 },
+        (pos) => {
+          mapInstance?.jumpTo({ center: [pos.coords.longitude, pos.coords.latitude], zoom: 17 });
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000 },
       );
-    } else {
-      mapInstance = initMap(fallback, 17);
     }
 
     return () => { if (mapInstance) mapInstance.remove(); mapRef.current = null; };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // mapReady is used by other effects below
+  const [mapReady, setMapReady] = useState(false);
 
   // Sync data-attributes
   useEffect(() => {
@@ -471,6 +506,79 @@ export function MapContainer() {
   useEffect(() => {
     renderZonesOnMap();
   }, [showZones, zoneDateFilter, filterByRep]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Rep live markers
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (!showReps) {
+      // Remove all rep markers
+      repMarkersRef.current.forEach((m) => m.remove());
+      repMarkersRef.current.clear();
+      return;
+    }
+
+    // Add/update rep markers
+    SIMULATED_REP_POSITIONS.forEach((rep) => {
+      if (repMarkersRef.current.has(rep.id)) {
+        repMarkersRef.current.get(rep.id)!.setLngLat([rep.lng, rep.lat]);
+        return;
+      }
+
+      const avatarUrl = getRepAvatar(rep.name) || '';
+      const el = document.createElement('div');
+      el.innerHTML = `
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center;cursor:pointer;">
+          <div style="position:relative;">
+            <div style="position:absolute;inset:-3px;border-radius:50%;background:rgba(99,102,241,0.25);animation:rep-pulse 2s ease-out infinite;"></div>
+            <img src="${avatarUrl}" alt="${rep.name}" style="width:36px;height:36px;border-radius:50%;border:3px solid #6366f1;object-fit:cover;position:relative;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,0.4);" />
+            <div style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#22c55e;border:2px solid white;z-index:2;"></div>
+          </div>
+          <div style="margin-top:4px;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:2px 8px;white-space:nowrap;">
+            <p style="font-size:10px;font-weight:700;color:white;margin:0;line-height:1.3;">${rep.name}</p>
+            <p style="font-size:8px;color:rgba(255,255,255,0.5);margin:0;line-height:1.3;">${rep.status}</p>
+          </div>
+        </div>
+      `;
+
+      const marker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([rep.lng, rep.lat])
+        .addTo(map);
+
+      repMarkersRef.current.set(rep.id, marker);
+    });
+
+    // Inject pulse animation if not present
+    if (!document.getElementById('rep-pulse-style')) {
+      const style = document.createElement('style');
+      style.id = 'rep-pulse-style';
+      style.textContent = '@keyframes rep-pulse{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.8);opacity:0}}';
+      document.head.appendChild(style);
+    }
+
+    return () => {
+      repMarkersRef.current.forEach((m) => m.remove());
+      repMarkersRef.current.clear();
+    };
+  }, [showReps, mapReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Simulate rep movement every 5s
+  useEffect(() => {
+    if (!showReps || !mapRef.current) return;
+    const interval = setInterval(() => {
+      SIMULATED_REP_POSITIONS.forEach((rep) => {
+        // Small random movement
+        rep.lat += (Math.random() - 0.5) * 0.001;
+        rep.lng += (Math.random() - 0.5) * 0.001;
+        const marker = repMarkersRef.current.get(rep.id);
+        if (marker) marker.setLngLat([rep.lng, rep.lat]);
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [showReps, mapReady]);
 
   // ---------------------------------------------------------------------------
   // Drawing zone preview
@@ -548,6 +656,16 @@ export function MapContainer() {
     saveZones();
     renderZonesOnMap();
     setSelectedZone(null);
+    bump();
+  }
+
+  function reassignZone(zoneId: string, repId: string) {
+    const rep = SALES_REPS.find((r) => r.id === repId);
+    zonesRef.current = zonesRef.current.map((z) =>
+      z.id === zoneId ? { ...z, assigned_to: repId || null, assigned_to_name: rep?.name || null } : z
+    );
+    saveZones();
+    setSelectedZone(zonesRef.current.find((z) => z.id === zoneId) || null);
     bump();
   }
 
@@ -863,7 +981,21 @@ export function MapContainer() {
               {showFilters && (
                 <div className="absolute right-0 top-full mt-2 w-[280px] rounded-xl border border-white/10 bg-black/85 p-3 shadow-2xl backdrop-blur-xl">
                   {/* --- PINS section --- */}
-                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-white/30">Pins — Statut</p>
+                  <div className="mb-2 flex items-center justify-between">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-white/30">Pins — Statut</p>
+                    <button
+                      onClick={() => {
+                        const allStatuses: PinStatus[] = statuses.map(([k]) => k);
+                        const allActive = allStatuses.every((s) => activeFilters.has(s));
+                        const next = new Set(allActive ? [] as PinStatus[] : allStatuses);
+                        setActiveFilters(next);
+                        applyPinVisibility(next);
+                      }}
+                      className="text-[9px] font-medium text-white/40 hover:text-white/70 transition-colors"
+                    >
+                      {statuses.every(([k]) => activeFilters.has(k)) ? 'Tout désélectionner' : 'Tout sélectionner'}
+                    </button>
+                  </div>
                   <div className="space-y-0.5">
                     {statuses.map(([key, cfg]) => {
                       const isActive = activeFilters.has(key);
@@ -943,6 +1075,22 @@ export function MapContainer() {
                       <option value="all">Tous</option>
                       {SALES_REPS.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
                     </select>
+                  </div>
+
+                  {/* --- REPS section --- */}
+                  <div className="mt-3 border-t border-white/8 pt-3">
+                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-emerald-300/50">Représentants</p>
+                    <button onClick={() => setShowReps(!showReps)}
+                      className={`flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-left transition-all ${showReps ? 'bg-white/8 text-white' : 'text-white/30 hover:text-white/50'}`}
+                    >
+                      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-all"
+                        style={{ borderColor: showReps ? '#22c55e' : 'rgba(255,255,255,.15)', backgroundColor: showReps ? '#22c55e' : 'transparent' }}
+                      >
+                        {showReps && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>}
+                      </span>
+                      <span className="text-[12px] font-medium">Voir les représentants</span>
+                      <span className="ml-auto text-[10px] font-medium text-emerald-400/60">{SIMULATED_REP_POSITIONS.length} en ligne</span>
+                    </button>
                   </div>
                 </div>
               )}
@@ -1046,6 +1194,22 @@ export function MapContainer() {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
           </div>
+
+          {canAssignZone(CURRENT_USER.role) && (
+            <div className="mt-4">
+              <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wider text-white/30">Assigné à</label>
+              <select
+                value={selectedZone.assigned_to || ''}
+                onChange={(e) => reassignZone(selectedZone.id, e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[13px] text-white outline-none focus:border-indigo-500/50"
+              >
+                <option value="" className="bg-[#0c0c14]">Non assigné</option>
+                {SALES_REPS.map((rep) => (
+                  <option key={rep.id} value={rep.id} className="bg-[#0c0c14]">{rep.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {canDeleteZone(CURRENT_USER.role, selectedZone) && (
             <button onClick={() => deleteZone(selectedZone.id)}

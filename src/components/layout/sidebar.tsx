@@ -11,15 +11,14 @@ import {
   Award,
   MessageSquare,
   DollarSign,
-  BarChart3,
   Settings,
+  UserCircle,
   ChevronLeft,
   ChevronRight,
   LogOut,
-  Mail,
 } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
-import { ClostraLogomark } from '@/components/ui/clostra-logo';
+import { getRepAvatar } from '@/lib/constants/avatars';
 
 interface NavItem {
   key: string;
@@ -34,8 +33,6 @@ const navItems: NavItem[] = [
   { key: 'leaderboard', href: '/leaderboard', icon: Award },
   { key: 'feed', href: '/feed', icon: MessageSquare },
   { key: 'commissions', href: '/commissions', icon: DollarSign },
-  { key: 'reports', href: '/reports', icon: BarChart3 },
-  { key: 'settings', href: '/settings', icon: Settings },
 ];
 
 export function Sidebar() {
@@ -54,11 +51,8 @@ export function Sidebar() {
       )}
     >
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-[#1E2430] px-4">
-        <ClostraLogomark />
-        {!collapsed && (
-          <span className="text-sm font-semibold tracking-tight text-white">Clostra</span>
-        )}
+      <div className="flex h-14 items-center border-b border-[#1E2430] px-4">
+        <img src="/clostra-logo-white.png" alt="Clostra" className={cn(collapsed ? 'h-5' : 'h-7')} />
       </div>
 
       {/* Nav */}
@@ -71,32 +65,18 @@ export function Sidebar() {
               key={item.key}
               href={item.href}
               className={cn(
-                'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-150',
+                'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-bold transition-colors duration-150',
                 active
                   ? 'bg-white/10 text-white'
-                  : 'text-[#8B95A5] hover:bg-white/5 hover:text-white'
+                  : 'text-white hover:bg-white/5'
               )}
             >
-              <Icon className={cn('h-4 w-4 shrink-0', active ? 'text-white' : 'text-[#5A6478] group-hover:text-[#8B95A5]')} />
+              <Icon className="h-4 w-4 shrink-0 text-white" />
               {!collapsed && <span>{t(item.key)}</span>}
             </Link>
           );
         })}
 
-        {/* Messages */}
-        <Link
-          href="/messages"
-          className={cn(
-            'group flex items-center gap-2.5 rounded-lg px-3 py-2 text-[13px] font-medium transition-colors duration-150',
-            isActive('/messages') ? 'bg-white/10 text-white' : 'text-[#8B95A5] hover:bg-white/5 hover:text-white'
-          )}
-        >
-          <div className="relative shrink-0">
-            <Mail className={cn('h-4 w-4', isActive('/messages') ? 'text-white' : 'text-[#5A6478] group-hover:text-[#8B95A5]')} />
-            <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-error text-[8px] font-bold text-white">3</span>
-          </div>
-          {!collapsed && <span>{t('messages')}</span>}
-        </Link>
       </nav>
 
       {/* User */}
@@ -105,7 +85,7 @@ export function Sidebar() {
           onClick={() => setShowUserMenu(!showUserMenu)}
           className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 transition-colors hover:bg-white/5"
         >
-          <Avatar name="Alex Martin" size="sm" />
+          <Avatar name="Alex Martin" src={getRepAvatar('Alex Martin')} size="sm" />
           {!collapsed && (
             <div className="flex-1 text-left">
               <p className="text-[13px] font-medium text-white">Alex Martin</p>
@@ -116,6 +96,14 @@ export function Sidebar() {
 
         {showUserMenu && !collapsed && (
           <div className="absolute bottom-full left-2 right-2 mb-1 rounded-lg border border-[#1E2430] bg-[#1A1F2E] p-1 shadow-xl">
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 rounded-md px-3 py-2 text-xs text-[#8B95A5] transition-colors hover:bg-white/5 hover:text-white"
+              onClick={() => setShowUserMenu(false)}
+            >
+              <UserCircle className="h-3.5 w-3.5" />
+              {t('profile')}
+            </Link>
             <Link
               href="/settings"
               className="flex items-center gap-2 rounded-md px-3 py-2 text-xs text-[#8B95A5] transition-colors hover:bg-white/5 hover:text-white"

@@ -6,13 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils/cn';
+import { getRepAvatar } from '@/lib/constants/avatars';
 import {
   Users,
   DollarSign,
+  Banknote,
   Target,
   TrendingUp,
   Calendar,
-  AlertTriangle,
+  GitBranch,
   Trophy,
   Zap,
   MapPin,
@@ -25,28 +27,28 @@ import {
 
 const ownerStats = [
   {
-    icon: <Users className="h-4 w-4" />,
+    icon: <Users className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Active Reps',
     value: '24',
     change: { value: '+3', direction: 'up' as const },
     subtitle: 'In the field right now',
   },
   {
-    icon: <DollarSign className="h-4 w-4" />,
+    icon: <Banknote className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Revenue Today',
     value: '$18,420',
     change: { value: '+12%', direction: 'up' as const },
     subtitle: 'vs. yesterday',
   },
   {
-    icon: <Target className="h-4 w-4" />,
+    icon: <Target className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Closes Today',
     value: '7',
     change: { value: '+2', direction: 'up' as const },
     subtitle: '85% conversion rate',
   },
   {
-    icon: <TrendingUp className="h-4 w-4" />,
+    icon: <TrendingUp className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Pipeline Value',
     value: '$142,800',
     change: { value: '+8%', direction: 'up' as const },
@@ -60,33 +62,35 @@ const recentWins = [
   { rep: 'Emily Rodriguez', deal: 'Park Avenue Home', value: '$5,100', time: '1h ago' },
 ];
 
-const needsAttention = [
-  { type: 'overdue', message: '5 follow-ups overdue', priority: 'high' },
-  { type: 'idle', message: '3 reps have no activity today', priority: 'medium' },
-  { type: 'stale', message: '12 leads untouched for 7+ days', priority: 'medium' },
+const pipelineStages = [
+  { name: 'New Lead', color: '#58A6FF', value: '$28,400', count: 3 },
+  { name: 'Must Recall', color: '#D29922', value: '$18,600', count: 2 },
+  { name: 'Quote Sent', color: '#A371F7', value: '$32,200', count: 3 },
+  { name: 'Closed Won', color: '#3FB950', value: '$64,800', count: 2 },
+  { name: 'Closed Lost', color: '#F85149', value: '$12,400', count: 1 },
 ];
 
 const repStats = [
   {
-    icon: <MapPin className="h-4 w-4" />,
+    icon: <MapPin className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Doors Knocked',
     value: '34',
     change: { value: '+8', direction: 'up' as const },
   },
   {
-    icon: <Target className="h-4 w-4" />,
+    icon: <Target className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Closes',
     value: '2',
     change: { value: '+1', direction: 'up' as const },
   },
   {
-    icon: <DollarSign className="h-4 w-4" />,
+    icon: <DollarSign className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Revenue',
     value: '$6,400',
     change: { value: '+22%', direction: 'up' as const },
   },
   {
-    icon: <Clock className="h-4 w-4" />,
+    icon: <Clock className="h-4 w-4" strokeWidth={2.5} />,
     label: 'Time in Field',
     value: '4h 32m',
     subtitle: 'Session active',
@@ -152,7 +156,7 @@ function ManagerDashboard() {
                   className="flex items-center justify-between rounded-lg bg-surface-elevated px-3 py-2.5"
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar name={win.rep} size="sm" />
+                    <Avatar name={win.rep} src={getRepAvatar(win.rep)} size="sm" />
                     <div>
                       <p className="text-[13px] font-medium text-text-primary">
                         {win.rep}
@@ -170,28 +174,30 @@ function ManagerDashboard() {
           </CardContent>
         </Card>
 
-        {/* Needs attention */}
+        {/* Pipeline overview */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-warning" />
-              Needs Attention
+              <GitBranch className="h-3.5 w-3.5 text-brand" />
+              Pipeline
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {needsAttention.map((item, i) => (
+              {pipelineStages.map((stage, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 rounded-lg bg-surface-elevated px-3 py-2.5"
                 >
                   <div
-                    className={cn(
-                      'h-1.5 w-1.5 shrink-0 rounded-full',
-                      item.priority === 'high' ? 'bg-error' : 'bg-warning'
-                    )}
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: stage.color }}
                   />
-                  <p className="text-[13px] text-text-secondary">{item.message}</p>
+                  <div className="flex-1">
+                    <p className="text-[13px] font-medium text-text-primary">{stage.name}</p>
+                    <p className="text-[10px] text-text-muted">{stage.count} leads</p>
+                  </div>
+                  <p className="text-[13px] font-semibold text-text-primary">{stage.value}</p>
                 </div>
               ))}
             </div>

@@ -4,7 +4,6 @@ import { useTranslations } from 'next-intl';
 import { usePathname, Link } from '@/i18n/navigation';
 import { cn } from '@/lib/utils/cn';
 import { Search, Bell, Command } from 'lucide-react';
-import { Avatar } from '@/components/ui/avatar';
 import { useState } from 'react';
 
 const routeTitles: Record<string, string> = {
@@ -50,7 +49,7 @@ export function TopBar() {
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-secondary"
+            className="relative flex h-8 w-8 items-center justify-center rounded-lg text-black transition-colors hover:bg-surface-elevated"
           >
             <Bell className="h-4 w-4" />
             <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-error" />
@@ -66,15 +65,10 @@ export function TopBar() {
 
         {/* Language */}
         <div className="flex items-center rounded-lg border border-border-subtle overflow-hidden">
-          <Link href={pathname} locale="fr" className="px-2 py-1 text-[10px] font-medium text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-secondary">FR</Link>
+          <Link href={pathname} locale="fr" className="px-2 py-1 text-[10px] font-medium text-black transition-colors hover:bg-surface-elevated">FR</Link>
           <div className="h-4 w-px bg-border-subtle" />
-          <Link href={pathname} locale="en" className="px-2 py-1 text-[10px] font-medium text-text-muted transition-colors hover:bg-surface-elevated hover:text-text-secondary">EN</Link>
+          <Link href={pathname} locale="en" className="px-2 py-1 text-[10px] font-medium text-black transition-colors hover:bg-surface-elevated">EN</Link>
         </div>
-
-        {/* User */}
-        <button className="rounded-lg p-1 transition-colors hover:bg-surface-elevated">
-          <Avatar name="Alex Martin" size="sm" />
-        </button>
       </div>
     </header>
   );
